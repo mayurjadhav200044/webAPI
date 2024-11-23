@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/mayurjadhav200044/webAPI.git'
+            }
+        }
+
+        stage('Restore Dependencies') {
+            steps {
+                dir('WebApplication1') { // Navigate to the correct folder
+                    sh 'dotnet restore' // Restore NuGet packages
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('WebApplication1') { // Navigate to the project folder
+                    sh 'dotnet build --configuration Release' // Build the project
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                dir('WebApplication1') { // Navigate to the project folder
+                    sh 'dotnet test --configuration Release' // Run tests
+                }
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                dir('WebApplication1') { // Navigate to the project folder
+                    sh 'dotnet publish --configuration Release --output ./bin/Release/net8.0' // Publish the app
+                }
+            }
+        }
+
+        stage('Run') {
+            steps {
+                dir('WebApplication1') { // Navigate to the project folder
+                    sh 'dotnet ./bin/Release/net8.0/WebApplication1.dll' // Run the application
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline execution completed.'
+        }
+        success {
+            echo 'Build succeeded!'
+        }
+        failure {
+            echo 'Build failed!'
+        }
+    }
+}
